@@ -26,7 +26,7 @@ for(a in names(crp)[4:18]) {
     plist[[a]] <- pl
 }
 ggarrange(plotlist = plist, ncol = 3, nrow = 5, labels = LETTERS[1:15])
-ggsave("results/deltacrp_diet.pdf", width = 10, height = 20)
+ggsave("results/correlations/crpv1v4_diet.pdf", width = 10, height = 20)
 
 plist <- c()
 for(a in names(crp)[4:18]) {
@@ -42,7 +42,7 @@ for(a in names(crp)[4:18]) {
     plist[[a]] <- pl
 }
 ggarrange(plotlist = plist, ncol = 3, nrow = 5, labels = LETTERS[1:15])
-ggsave("results/deltacrp2y_diet.pdf", width = 10, height = 20)
+ggsave("results/correlations/crpv1v5_diet.pdf", width = 10, height = 20)
 
 plist <- c()
 for(a in names(crp)[4:18]) {
@@ -57,13 +57,13 @@ for(a in names(crp)[4:18]) {
     plist[[a]] <- pl
 }
 ggarrange(plotlist = plist, ncol = 3, nrow = 5, labels = LETTERS[1:15])
-ggsave("results/fucrp_diet.pdf", width = 10, height = 20)
+ggsave("results/correlations/crpv4_diet.pdf", width = 10, height = 20)
 
 #### BMI ####
 plist <- c()
-for(a in names(bmi)[4:18]) {
-    bmi$var <- bmi[[a]]
-    pl <- ggplot(data = bmi, aes(x = log10(var), y = bmi_v1v4)) +
+for(a in names(baria)[4:18]) {
+    baria$var <- baria[[a]]
+    pl <- ggplot(data = baria, aes(x = log10(var), y = bmi_v1v4)) +
         geom_point(alpha = 0.7, color = ggsci::pal_bmj()(1)) +
         geom_smooth(method = "lm") +
         stat_cor() +
@@ -73,12 +73,12 @@ for(a in names(bmi)[4:18]) {
     plist[[a]] <- pl
 }
 ggarrange(plotlist = plist, ncol = 3, nrow = 5, labels = LETTERS[1:15])
-ggsave("results/bmiv1v4_diet.pdf", width = 10, height = 20)
+ggsave("results/correlations/bmiv1v4_diet.pdf", width = 10, height = 20)
 
 plist <- c()
-for(a in names(bmi)[4:18]) {
-    bmi$var <- bmi[[a]]
-    pl <- ggplot(data = bmi, aes(x = log10(var), y = bmi_v1v5)) +
+for(a in names(baria)[4:18]) {
+    baria$var <- baria[[a]]
+    pl <- ggplot(data = baria, aes(x = log10(var), y = bmi_v1v5)) +
         geom_point(alpha = 0.7, color = ggsci::pal_bmj()(1)) +
         geom_smooth(method = "lm") +
         stat_cor() +
@@ -88,12 +88,12 @@ for(a in names(bmi)[4:18]) {
     plist[[a]] <- pl
 }
 ggarrange(plotlist = plist, ncol = 3, nrow = 5, labels = LETTERS[1:15])
-ggsave("results/bmiv1v5_diet.pdf", width = 10, height = 20)
+ggsave("results/correlations/bmiv1v5_diet.pdf", width = 10, height = 20)
 
 plist <- c()
-for(a in names(bmi)[4:18]) {
-    bmi$var <- bmi[[a]]
-    pl <- ggplot(data = bmi, aes(x = log10(var), y = bmiperc_v1v5)) +
+for(a in names(baria)[4:18]) {
+    baria$var <- baria[[a]]
+    pl <- ggplot(data = baria, aes(x = log10(var), y = bmiperc_v1v5)) +
         geom_point(alpha = 0.7, color = ggsci::pal_bmj()(1)) +
         geom_smooth(method = "lm") +
         stat_cor() +
@@ -103,12 +103,12 @@ for(a in names(bmi)[4:18]) {
     plist[[a]] <- pl
 }
 ggarrange(plotlist = plist, ncol = 3, nrow = 5, labels = LETTERS[1:15])
-ggsave("results/bmipercv1v4_diet.pdf", width = 10, height = 20)
+ggsave("results/correlations/bmipercv1v4_diet.pdf", width = 10, height = 20)
 
 plist <- c()
-for(a in names(bmi)[4:18]) {
-    bmi$var <- bmi[[a]]
-    pl <- ggplot(data = bmi, aes(x = log10(var), y = bmiperc_v1v5)) +
+for(a in names(baria)[4:18]) {
+    baria$var <- baria[[a]]
+    pl <- ggplot(data = baria, aes(x = log10(var), y = bmiperc_v1v5)) +
         geom_point(alpha = 0.7, color = ggsci::pal_bmj()(1)) +
         geom_smooth(method = "lm") +
         stat_cor() +
@@ -118,14 +118,14 @@ for(a in names(bmi)[4:18]) {
     plist[[a]] <- pl
 }
 ggarrange(plotlist = plist, ncol = 3, nrow = 5, labels = LETTERS[1:15])
-ggsave("results/bmipercv1v5_diet.pdf", width = 10, height = 20)
+ggsave("results/correlations/bmipercv1v5_diet.pdf", width = 10, height = 20)
 
 
 #### HOMA IR ####
 plist <- c()
-for(a in names(homair)[4:18]) {
-    homair$var <- homair[[a]]
-    pl <- ggplot(data = homair, aes(x = log10(var), y = log10(homaIR_v4+0.01))) +
+for(a in names(baria)[4:18]) {
+    baria$var <- baria[[a]]
+    pl <- ggplot(data = baria, aes(x = log10(var), y = log10(homaIR_v4+0.01))) +
         geom_point(alpha = 0.7, color = ggsci::pal_bmj()(1)) +
         geom_smooth(method = "lm") +
         stat_cor() +
@@ -135,12 +135,12 @@ for(a in names(homair)[4:18]) {
     plist[[a]] <- pl
 }
 ggarrange(plotlist = plist, ncol = 3, nrow = 5, labels = LETTERS[1:15])
-ggsave("results/homairv4_diet.pdf", width = 10, height = 20)
+ggsave("results/correlations/homairv4_diet.pdf", width = 10, height = 20)
 
 plist <- c()
-for(a in names(homair)[4:18]) {
-    homair$var <- homair[[a]]
-    pl <- ggplot(data = homair, aes(x = log10(var), y = log10(homaIR_v5+0.01))) +
+for(a in names(baria)[4:18]) {
+    baria$var <- baria[[a]]
+    pl <- ggplot(data = baria, aes(x = log10(var), y = log10(homaIR_v5+0.01))) +
         geom_point(alpha = 0.7, color = ggsci::pal_bmj()(1)) +
         geom_smooth(method = "lm") +
         stat_cor() +
@@ -150,12 +150,12 @@ for(a in names(homair)[4:18]) {
     plist[[a]] <- pl
 }
 ggarrange(plotlist = plist, ncol = 3, nrow = 5, labels = LETTERS[1:15])
-ggsave("results/homairv5_diet.pdf", width = 10, height = 20)
+ggsave("results/correlations/homairv5_diet.pdf", width = 10, height = 20)
 
 plist <- c()
-for(a in names(homair)[4:18]) {
-    homair$var <- homair[[a]]
-    pl <- ggplot(data = homair, aes(x = log10(var), y = homaIR_v1v4*-1)) +
+for(a in names(baria)[4:18]) {
+    baria$var <- baria[[a]]
+    pl <- ggplot(data = baria, aes(x = log10(var), y = homaIR_v1v4*-1)) +
         scale_y_log10() +
         geom_point(alpha = 0.7, color = ggsci::pal_bmj()(1)) +
         geom_smooth(method = "lm") +
@@ -166,13 +166,13 @@ for(a in names(homair)[4:18]) {
     plist[[a]] <- pl
 }
 ggarrange(plotlist = plist, ncol = 3, nrow = 5, labels = LETTERS[1:15])
-ggsave("results/homairv1v4_diet.pdf", width = 10, height = 20)
+ggsave("results/correlations/homairv1v4_diet.pdf", width = 10, height = 20)
 
 
 plist <- c()
-for(a in names(homair)[4:18]) {
-    homair$var <- homair[[a]]
-    pl <- ggplot(data = homair, aes(x = log10(var), y = homaIR_v1v5*-1)) +
+for(a in names(baria)[4:18]) {
+    baria$var <- baria[[a]]
+    pl <- ggplot(data = baria, aes(x = log10(var), y = homaIR_v1v5*-1)) +
         scale_y_log10() +
         geom_point(alpha = 0.7, color = ggsci::pal_bmj()(1)) +
         geom_smooth(method = "lm") +
@@ -183,5 +183,5 @@ for(a in names(homair)[4:18]) {
     plist[[a]] <- pl
 }
 ggarrange(plotlist = plist, ncol = 3, nrow = 5, labels = LETTERS[1:15])
-ggsave("results/homairv1v5_diet.pdf", width = 10, height = 20)
+ggsave("results/correlations/homairv1v5_diet.pdf", width = 10, height = 20)
 
