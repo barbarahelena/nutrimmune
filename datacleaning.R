@@ -43,7 +43,7 @@ theme_Publication <- function(base_size=14, base_family="sans") {
 datevars <- c("v1_date", "v2_date", "v3_date", "v4_date",
               "v5_date", "v6_date", "v7_date")
 clin <- readRDS("data/BARIA_clinical_20241209.RDS")
-clin1 <- clin%>% 
+clin1 <- clin %>% 
     rename(ID = Subject_ID) %>% 
     mutate(ID = str_c("BARIA_", ID)) %>% 
     select(ID, v0_date = `Participant Creation Date`, 
@@ -60,6 +60,7 @@ clin1 <- clin%>%
            v0_il6 = il6, v0_il8 = il8, v0_il10 = il10, 
            v0_leptin = leptin, v0_adiponectin = adiponectin,
            v0_glp1 = glp1, v0_pyy = PYY,
+           # V1 data?
            # V4 data
            v4_bmi = V4_bmi, v4_sysbp = V4_sysbp, v4_diabp = V4_diabp,
            v4_leuko = V4_leukocytes, v4_crp = V4_crp, v4_hba1c = V4_hba1c,
@@ -71,7 +72,9 @@ clin1 <- clin%>%
            v5_tnfa = V5_tnfa, v5_ifng = V5_ifng, v5_il1b = V5_il1b, v5_il1ra = V5_il1ra, 
            v5_il6 = V5_il6, v5_il8 = V5_il8, v5_il10 = V5_il10, 
            v5_leptin = V5_leptin, v5_adiponectin = V5_adiponectin,
-           v5_glp1 = V5_glp1, v5_crp = V5_crp, v5_bmi = V5_bmi
+           v5_glp1 = V5_glp1, v5_crp = V5_crp, v5_bmi = V5_bmi,
+           contains("insulin"),
+           contains("gluc")
            ) %>% 
     mutate(across(all_of(datevars), 
                   ~ {
@@ -90,7 +93,15 @@ clin1 <- clin%>%
            crp_v1v4 = v4_crp - v0_crp,
            crp_v1v5 = v5_crp - v0_crp,
            bmi_v1v4 = v4_bmi - v0_bmi,
-           bmi_v1v5 = v5_bmi - v0_bmi
+           bmi_v1v5 = v5_bmi - v0_bmi,
+           bmiperc_v1v4 = (bmi_v1v4/v0_bmi) *100,
+           bmiperc_v1v5 = (bmi_v1v5/v0_bmi) *100,
+           across(contains("insulin"), ~ .x / 6),
+           homaIR_v1 = (min0insulin * min0gluc) / 22.5,
+           homaIR_v4 = (V4_min0insulin * V4_min0gluc) / 22.5,
+           homaIR_v5 = (V5_min0insulin * V5_min0gluc) / 22.5,
+           homaIR_v1v4 = homaIR_v4 - homaIR_v1,
+           homaIR_v1v5 = homaIR_v5 - homaIR_v1
            )
 
 clinv4 <- clin %>% select(contains("V4"), contains("v4"))
@@ -100,7 +111,7 @@ names(clinv1)
 clin[1:5,1:5]
 Amelia::missmap(clin1)
 
-baria <- rio::import("data/baria_dieet.xlsx") 
+baria <- rio::import("data/baria_dieet.xlsx") %>% 
     select(ID = naam, Date = datum, Meal = moment,
            TotalCal = `energie (kcal)`, Protein = `eiwit totaal (g)`,
            Carbs = `koolhydraten totaal (g)`, Fat = `vet totaal (g)`,
@@ -117,30 +128,6 @@ baria <- rio::import("data/baria_dieet.xlsx")
         Year = format(Date, "%Y"),
         Water = case_when(Water > 25000 ~ Water / 1000, .default = Water)
     )
-            
-diabar <- rio::import("data/diabar_dieet.xlsx") %>% 
-    select(ID = naam, Date = datum, Meal = moment,
-           TotalCal = `energie (kcal)`, Protein = `eiwit totaal (g)`,
-           Carbs = `koolhydraten totaal (g)`, Fat = `vet totaal (g)`,
-           SatFat = `vetzuren verzadigd (g)`, UnsatFat = `vetzuren onverzadigd (g)`,
-           TransFat = `trans vetzuren (g)`, LinolicAcid = `linolzuur (g)`,
-           Cholesterol = `cholesterol (mg)`, Alcohol = `alcohol (g)`,
-           Fibers = `voedingsvezels (g)`, Water = `water (ml)`, MonoDiSacch = `tot mono disach (g)`,
-           PolySacch = `polysacchariden (g)`, PolyunsatFat = `vetzuren meerv onverzadigd (g)`) %>% 
-    mutate(
-        ID = str_c("DIABAR_", ID),
-        DateTime = ymd_hms(Date),
-        Time = format(DateTime, "%H:%M:%S"),
-        Date = as_date(DateTime),
-        Year = format(Date, "%Y")
-    )
-
-
-bariaday <- baria %>% 
-    group_by(ID, Year, Date) %>% 
-    summarise(across(TotalCal:PolyunsatFat, sum)) %>% 
-    group_by(ID, Year) %>% 
-    summarise(across(TotalCal:PolyunsatFat, mean))
 
 bariayear <- baria %>%
     group_by(ID, Year, Date) %>%
@@ -156,65 +143,38 @@ bariabase <- bariayear %>% group_by(ID) %>%
     ungroup(.) %>% 
     select(-starts_with("daily_sum_")) %>% 
     rename_with(~gsub("^rolling_avg_daily_sum_", "", .), starts_with("rolling_avg_"))
+            
+diabar <- rio::import("data/diabar_dieet.xlsx") %>% 
+    select(ID = naam, Date = datum, Meal = moment,
+           TotalCal = `energie (kcal)`, Protein = `eiwit totaal (g)`,
+           Carbs = `koolhydraten totaal (g)`, Fat = `vet totaal (g)`,
+           SatFat = `vetzuren verzadigd (g)`, UnsatFat = `vetzuren onverzadigd (g)`,
+           TransFat = `trans vetzuren (g)`, LinolicAcid = `linolzuur (g)`,
+           Cholesterol = `cholesterol (mg)`, Alcohol = `alcohol (g)`,
+           Fibers = `voedingsvezels (g)`, Water = `water (ml)`, MonoDiSacch = `tot mono disach (g)`,
+           PolySacch = `polysacchariden (g)`, PolyunsatFat = `vetzuren meerv onverzadigd (g)`) %>% 
+    mutate(
+        DateTime = ymd_hms(Date),
+        Time = format(DateTime, "%H:%M:%S"),
+        Date = as_date(DateTime),
+        Year = format(Date, "%Y")
+    )
 
-bariatot <- left_join(bariabase, clin1)    
+diabaryear <- diabar %>%
+    group_by(ID, Year, Date) %>%
+    summarise(across(TotalCal:PolyunsatFat, ~ sum(.x, na.rm = TRUE), .names = "daily_sum_{col}"), .groups = "drop") %>%
+    group_by(ID, Year) %>%
+    mutate(across(starts_with("daily_sum"), ~ slider::slide_dbl(.x, mean, .before = 2, .complete = FALSE), 
+                  .names = "rolling_avg_{col}"))
+head(diabaryear)
 
-crp <- bariatot %>% filter(v0_crp < 100 & v4_crp < 100) %>% filter(TotalCal < 5000)
-bmi <- bariatot %>% filter(TotalCal < 5000)
+diabarbase <- diabaryear %>% group_by(ID) %>% 
+    filter(Year == min(Year)) %>%
+    slice_tail(n = 1) %>% 
+    ungroup(.) %>% 
+    select(-starts_with("daily_sum_")) %>% 
+    rename_with(~gsub("^rolling_avg_daily_sum_", "", .), starts_with("rolling_avg_"))
 
-plist <- c()
-for(a in names(crp)[4:18]) {
-    crp$var <- crp[[a]]
-    print(gghistogram(crp$var, title = a, fill = ggsci::pal_bmj()(1)))
-    pl <- ggplot(data = crp, aes(x = var, y = crp_v1v4)) +
-        geom_point(alpha = 0.7, color = ggsci::pal_bmj()(1)) +
-        geom_smooth(method = "lm") +
-        stat_cor() +
-        theme_Publication() +
-        labs(title = paste0(a), y = "crp change at 1 year",
-             x = paste0(a))
-    plist[[a]] <- pl
-}
-ggarrange(plotlist = plist, ncol = 3, nrow = 5, labels = LETTERS[1:15])
-
-plist <- c()
-for(a in names(crp)[4:18]) {
-    crp$var <- crp[[a]]
-    pl <- ggplot(data = crp, aes(x = var, y = v4_crp)) +
-        geom_point(alpha = 0.7) +
-        geom_smooth(method = "lm") +
-        stat_cor() +
-        theme_Publication() +
-        labs(title = paste0(a), y = "bmi change at 1 year",
-             x = paste0(a))
-    plist[[a]] <- pl
-}
-ggarrange(plotlist = plist, ncol = 3, nrow = 5, labels = LETTERS[1:15])
-
-plist <- c()
-for(a in names(bmi)[4:18]) {
-    bmi$var <- bmi[[a]]
-    pl <- ggplot(data = bmi, aes(x = var, y = bmi_v1v4)) +
-        geom_point(alpha = 0.7, color = ggsci::pal_bmj()(1)) +
-        geom_smooth(method = "lm") +
-        stat_cor() +
-        theme_Publication() +
-        labs(title = paste0(a), y = "bmi change at 1 year",
-             x = paste0(a))
-    plist[[a]] <- pl
-}
-ggarrange(plotlist = plist, ncol = 3, nrow = 5, labels = LETTERS[1:15])
-
-plist <- c()
-for(a in names(bmi)[4:18]) {
-    bmi$var <- bmi[[a]]
-    pl <- ggplot(data = bmi, aes(x = var, y = bmi_v1v5)) +
-        geom_point(alpha = 0.7, color = ggsci::pal_bmj()(1)) +
-        geom_smooth(method = "lm") +
-        stat_cor() +
-        theme_Publication() +
-        labs(title = paste0(a), y = "bmi change at 2 years",
-             x = paste0(a))
-    plist[[a]] <- pl
-}
-ggarrange(plotlist = plist, ncol = 3, nrow = 5, labels = LETTERS[1:15])
+diettot <- rbind(bariabase, diabarbase)
+bariatot <- left_join(diettot, clin1) %>% filter(TotalCal < 5000) 
+saveRDS(bariatot, "data/bariatot.RDS")
