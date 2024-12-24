@@ -61,6 +61,10 @@ clin1 <- clin %>%
            v0_leptin = leptin, v0_adiponectin = adiponectin,
            v0_glp1 = glp1, v0_pyy = PYY,
            # V1 data?
+           # V2 data
+           v2_bmi = V2_bmi, v2_crp = V2_crp, v2_leuko = V2_leukocytes,
+           # V3 data
+           v3_bmi = V3_bmi, v3_crp = V3_crp, v3_leuko = V3_leukocytes,
            # V4 data
            v4_bmi = V4_bmi, v4_sysbp = V4_sysbp, v4_diabp = V4_diabp,
            v4_leuko = V4_leukocytes, v4_crp = V4_crp, v4_hba1c = V4_hba1c,
@@ -70,7 +74,7 @@ clin1 <- clin %>%
            v4_glp1 = V4_glp1, v4_pyy = V4_PYY,
            # V5 data
            v5_tnfa = V5_tnfa, v5_ifng = V5_ifng, v5_il1b = V5_il1b, v5_il1ra = V5_il1ra, 
-           v5_il6 = V5_il6, v5_il8 = V5_il8, v5_il10 = V5_il10, 
+           v5_il6 = V5_il6, v5_il8 = V5_il8, v5_il10 = V5_il10, v5_leuko = V5_leukocytes,
            v5_leptin = V5_leptin, v5_adiponectin = V5_adiponectin,
            v5_glp1 = V5_glp1, v5_crp = V5_crp, v5_bmi = V5_bmi,
            contains("insulin"),
@@ -94,6 +98,7 @@ clin1 <- clin %>%
            crp_v1v5 = v5_crp - v0_crp,
            bmi_v1v4 = v4_bmi - v0_bmi,
            bmi_v1v5 = v5_bmi - v0_bmi,
+           v2_bmi = case_when(v2_bmi < 10 ~ NA, .default = v2_bmi),
            bmiperc_v1v4 = (bmi_v1v4/v0_bmi) *100,
            bmiperc_v1v5 = (bmi_v1v5/v0_bmi) *100,
            across(contains("insulin"), ~ .x / 6),
@@ -101,7 +106,16 @@ clin1 <- clin %>%
            homaIR_v4 = (V4_min0insulin * V4_min0gluc) / 22.5,
            homaIR_v5 = (V5_min0insulin * V5_min0gluc) / 22.5,
            homaIR_v1v4 = homaIR_v4 - homaIR_v1,
-           homaIR_v1v5 = homaIR_v5 - homaIR_v1
+           homaIR_v1v5 = homaIR_v5 - homaIR_v1,
+           sex = case_when(sex == 2 ~ "female", sex == 1 ~ "male"),
+           v0_dm = case_when(v0_dm == 1 ~ "yes", v0_dm == 2 ~ "no"),
+           v0_hypertension = case_when(v0_hypertension == 1 ~ "yes", v0_hypertension == 2 ~ "no"),
+           v0_hyperchol = case_when(v0_hyperchol == 1 ~ "yes", v0_hyperchol == 2 ~ "no"),
+           v0_myocardInf = case_when(v0_myocardInf == 1 ~ "yes", v0_myocardInf == 2 ~ "no"),
+           v0_smoking = case_when(v0_smoking == 1 ~ "current smoking", v0_smoking == 2 ~ "former smoking", 
+                                  v0_smoking == 3 ~ "never"),
+           v0_alcohol = case_when(v0_alcohol == 1 ~ "yes", v0_alcohol == 2 ~ "no"),
+           across(where(is.character), as.factor)
            )
 
 clinv4 <- clin %>% select(contains("V4"), contains("v4"))
@@ -188,60 +202,59 @@ diettot <- rbind(bariabase, diabarbase)
 bariatot <- left_join(diettot, clin1) %>% filter(TotalCal < 5000)  %>% 
     mutate(
         TotalCalBin = case_when(TotalCal < median(TotalCal, na.rm = TRUE) ~ 
-                                    str_c("lower than ", median(TotalCal, na.rm = TRUE), " kcal"),
+                                    str_c("<", round(median(TotalCal, na.rm = TRUE), 0), " kcal"),
                                 TotalCal >= median(TotalCal, na.rm = TRUE) ~ 
-                                    str_c("higher than ", median(TotalCal, na.rm = TRUE), " kcal")),
+                                    str_c(">=", round(median(TotalCal, na.rm = TRUE), 0), " kcal")),
         ProteinBin = case_when(Protein < median(Protein, na.rm = TRUE) ~ 
-                                   str_c("lower than ", median(Protein, na.rm = TRUE), " g"),
+                                   str_c("<", round(median(Protein, na.rm = TRUE), 0), " g"),
                                Protein >= median(Protein, na.rm = TRUE) ~ 
-                                   str_c("higher than ", median(Protein, na.rm = TRUE), " g")),
+                                   str_c(">=", round(median(Protein, na.rm = TRUE), 0), " g")),
         FibersBin = case_when(Fibers < median(Fibers, na.rm = TRUE) ~ 
-                                  str_c("lower than ", median(Fibers, na.rm = TRUE), " g"),
+                                  str_c("<", round(median(Fibers, na.rm = TRUE),0), " g"),
                               Fibers >= median(Fibers, na.rm = TRUE) ~ 
-                                  str_c("higher than ", median(Fibers, na.rm = TRUE), " g")),
+                                  str_c(">=", round(median(Fibers, na.rm = TRUE), 0), " g")),
         CarbsBin = case_when(Carbs < median(Carbs, na.rm = TRUE) ~ 
-                                 str_c("lower than ", median(Carbs, na.rm = TRUE), " g"),
+                                 str_c("<", round(median(Carbs, na.rm = TRUE), 0), " g"),
                              Carbs >= median(Carbs, na.rm = TRUE) ~ 
-                                 str_c("higher than ", median(Carbs, na.rm = TRUE), " g")),
+                                 str_c(">=", round(median(Carbs, na.rm = TRUE),0), " g")),
         FatBin = case_when(Carbs < median(Fat, na.rm = TRUE) ~ 
-                               str_c("lower than ", median(Fat, na.rm = TRUE), " g"),
+                               str_c("<", round(median(Fat, na.rm = TRUE), 0), " g"),
                            Carbs >= median(Fat, na.rm = TRUE) ~ 
-                               str_c("higher than ", median(Carbs, na.rm = TRUE), " g")),
+                               str_c(">=", round(median(Fat, na.rm = TRUE), 0), " g")),
         SatFatBin = case_when(SatFat < median(SatFat, na.rm = TRUE) ~ 
-                                  str_c("lower than ", median(SatFat, na.rm = TRUE), " g"),
+                                  str_c("<", round(median(SatFat, na.rm = TRUE),0), " g"),
                               SatFat >= median(SatFat, na.rm = TRUE) ~ 
-                                  str_c("higher than ", median(Carbs, na.rm = TRUE), " g")),
+                                  str_c(">=", round(median(SatFat, na.rm = TRUE),0), " g")),
         UnsatFatBin = case_when(UnsatFat < median(UnsatFat, na.rm = TRUE) ~ 
-                                    str_c("lower than ", median(UnsatFat, na.rm = TRUE), " g"),
+                                    str_c("<", round(median(UnsatFat, na.rm = TRUE),0), " g"),
                                 UnsatFat >= median(UnsatFat, na.rm = TRUE) ~ 
-                                    str_c("higher than ", median(UnsatFat, na.rm = TRUE), " g")),
+                                    str_c(">=", round(median(UnsatFat, na.rm = TRUE),0), " g")),
         TransFatBin = case_when(TransFat < median(TransFat, na.rm = TRUE) ~ 
-                                    str_c("lower than ", median(TransFat, na.rm = TRUE), " g"),
+                                    str_c("<", round(median(TransFat, na.rm = TRUE),0), " g"),
                                 TransFat >= median(TransFat, na.rm = TRUE) ~ 
-                                    str_c("higher than ", median(TransFat, na.rm = TRUE), " g")),
+                                    str_c(">=", round(median(TransFat, na.rm = TRUE),0), " g")),
         LinolicAcidBin = case_when(LinolicAcid < median(LinolicAcid, na.rm = TRUE) ~ 
-                                       str_c("lower than ", median(LinolicAcid, na.rm = TRUE), " g"),
+                                       str_c("<", round(median(LinolicAcid, na.rm = TRUE),0), " g"),
                                    LinolicAcid >= median(LinolicAcid, na.rm = TRUE) ~ 
-                                       str_c("higher than ", median(LinolicAcid, na.rm = TRUE), " g")),
+                                       str_c(">=", round(median(LinolicAcid, na.rm = TRUE),0), " g")),
         CholesterolBin = case_when(Cholesterol < median(Cholesterol, na.rm = TRUE) ~ 
-                                       str_c("lower than ", median(Cholesterol, na.rm = TRUE), " mg"),
+                                       str_c("<", round(median(Cholesterol, na.rm = TRUE),0), " mg"),
                                    Cholesterol >= median(Cholesterol, na.rm = TRUE) ~ 
-                                       str_c("higher than ", median(Cholesterol, na.rm = TRUE), " mg")),
-        AlcoholBin = case_when(Alcohol < median(Alcohol, na.rm = TRUE) ~ 
-                                   str_c("lower than ", median(Alcohol, na.rm = TRUE), " g"),
-                               Alcohol >= median(Alcohol, na.rm = TRUE) ~ 
-                                   str_c("higher than ", median(Alcohol, na.rm = TRUE), " g")),
+                                       str_c(">=", round(median(Cholesterol, na.rm = TRUE),0), " mg")),
+        AlcoholBin = case_when(Alcohol == 0 ~ "0 g", Alcohol > 0 ~ ">0 g"),
         MonoDiSacchBin = case_when(MonoDiSacch < median(MonoDiSacch, na.rm = TRUE) ~ 
-                                       str_c("lower than ", median(MonoDiSacch, na.rm = TRUE), " g"),
+                                       str_c("<", round(median(MonoDiSacch, na.rm = TRUE),0), " g"),
                                    MonoDiSacch >= median(MonoDiSacch, na.rm = TRUE) ~ 
-                                       str_c("higher than ", median(PolyunsatFat, na.rm = TRUE), " g")),
+                                       str_c(">=", round(median(MonoDiSacch, na.rm = TRUE),0), " g")),
         PolySacchBin = case_when(PolySacch < median(PolySacch, na.rm = TRUE) ~ 
-                                     str_c("lower than ", median(PolySacch, na.rm = TRUE), " g"),
+                                     str_c("<", round(median(PolySacch, na.rm = TRUE),0), " g"),
                                  PolySacch >= median(PolySacch, na.rm = TRUE) ~ 
-                                     str_c("higher than ", median(PolySacch, na.rm = TRUE), " g")),
+                                     str_c(">=", round(median(PolySacch, na.rm = TRUE),0), " g")),
         PolyunsatFatBin = case_when(PolyunsatFat < median(PolyunsatFat, na.rm = TRUE) ~ 
-                                        str_c("lower than ", median(PolyunsatFat, na.rm = TRUE), " g"),
+                                        str_c("<", round(median(PolyunsatFat, na.rm = TRUE),0), " g"),
                                     PolyunsatFat >= median(PolyunsatFat, na.rm = TRUE) ~ 
-                                        str_c("higher than ", median(PolyunsatFat, na.rm = TRUE), " g"))
-    )
+                                        str_c(">=", round(median(PolyunsatFat, na.rm = TRUE),0), " g")),
+        across(contains("Bin"), as.factor)
+    ) 
 saveRDS(bariatot, "data/bariatot.RDS")
+
