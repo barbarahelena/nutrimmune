@@ -113,20 +113,29 @@ Amelia::missmap(clin1)
 
 baria <- rio::import("data/baria_dieet.xlsx") %>% 
     select(ID = naam, Date = datum, Meal = moment,
-           TotalCal = `energie (kcal)`, Protein = `eiwit totaal (g)`,
-           Carbs = `koolhydraten totaal (g)`, Fat = `vet totaal (g)`,
-           SatFat = `vetzuren verzadigd (g)`, UnsatFat = `vetzuren onverzadigd (g)`,
-           TransFat = `trans vetzuren (g)`, LinolicAcid = `linolzuur (g)`,
-           Cholesterol = `cholesterol (mg)`, Alcohol = `alcohol (g)`,
-           Fibers = `voedingsvezels (g)`, Water = `water (ml)`, MonoDiSacch = `tot mono disach (g)`,
-           PolySacch = `polysacchariden (g)`, PolyunsatFat = `vetzuren meerv onverzadigd (g)`) %>% 
+           TotalCal = `energie (kcal)`, 
+           Protein = `eiwit totaal (g)`,
+           Carbs = `koolhydraten totaal (g)`, 
+           Fat = `vet totaal (g)`,
+           SatFat = `vetzuren verzadigd (g)`, 
+           UnsatFat = `vetzuren onverzadigd (g)`,
+           TransFat = `trans vetzuren (g)`, 
+           LinolicAcid = `linolzuur (g)`,
+           Cholesterol = `cholesterol (mg)`, 
+           Alcohol = `alcohol (g)`,
+           Fibers = `voedingsvezels (g)`, 
+           Water = `water (ml)`, 
+           MonoDiSacch = `tot mono disach (g)`,
+           PolySacch = `polysacchariden (g)`, 
+           PolyunsatFat = `vetzuren meerv onverzadigd (g)`
+           ) %>% 
     mutate(
         ID = str_c("BARIA_", ID),
         DateTime = ymd_hms(Date),
         Time = format(DateTime, "%H:%M:%S"),
         Date = as_date(DateTime),
         Year = format(Date, "%Y"),
-        Water = case_when(Water > 25000 ~ Water / 1000, .default = Water)
+        Water = case_when(Water > 25000 ~ Water / 1000, .default = Water), # correct unit
     )
 
 bariayear <- baria %>%
@@ -142,7 +151,7 @@ bariabase <- bariayear %>% group_by(ID) %>%
     slice_tail(n = 1) %>% 
     ungroup(.) %>% 
     select(-starts_with("daily_sum_")) %>% 
-    rename_with(~gsub("^rolling_avg_daily_sum_", "", .), starts_with("rolling_avg_"))
+    rename_with(~gsub("^rolling_avg_daily_sum_", "", .), starts_with("rolling_avg_")) 
             
 diabar <- rio::import("data/diabar_dieet.xlsx") %>% 
     select(ID = naam, Date = datum, Meal = moment,
@@ -176,5 +185,63 @@ diabarbase <- diabaryear %>% group_by(ID) %>%
     rename_with(~gsub("^rolling_avg_daily_sum_", "", .), starts_with("rolling_avg_"))
 
 diettot <- rbind(bariabase, diabarbase)
-bariatot <- left_join(diettot, clin1) %>% filter(TotalCal < 5000) 
+bariatot <- left_join(diettot, clin1) %>% filter(TotalCal < 5000)  %>% 
+    mutate(
+        TotalCalBin = case_when(TotalCal < median(TotalCal, na.rm = TRUE) ~ 
+                                    str_c("lower than ", median(TotalCal, na.rm = TRUE), " kcal"),
+                                TotalCal >= median(TotalCal, na.rm = TRUE) ~ 
+                                    str_c("higher than ", median(TotalCal, na.rm = TRUE), " kcal")),
+        ProteinBin = case_when(Protein < median(Protein, na.rm = TRUE) ~ 
+                                   str_c("lower than ", median(Protein, na.rm = TRUE), " g"),
+                               Protein >= median(Protein, na.rm = TRUE) ~ 
+                                   str_c("higher than ", median(Protein, na.rm = TRUE), " g")),
+        FibersBin = case_when(Fibers < median(Fibers, na.rm = TRUE) ~ 
+                                  str_c("lower than ", median(Fibers, na.rm = TRUE), " g"),
+                              Fibers >= median(Fibers, na.rm = TRUE) ~ 
+                                  str_c("higher than ", median(Fibers, na.rm = TRUE), " g")),
+        CarbsBin = case_when(Carbs < median(Carbs, na.rm = TRUE) ~ 
+                                 str_c("lower than ", median(Carbs, na.rm = TRUE), " g"),
+                             Carbs >= median(Carbs, na.rm = TRUE) ~ 
+                                 str_c("higher than ", median(Carbs, na.rm = TRUE), " g")),
+        FatBin = case_when(Carbs < median(Fat, na.rm = TRUE) ~ 
+                               str_c("lower than ", median(Fat, na.rm = TRUE), " g"),
+                           Carbs >= median(Fat, na.rm = TRUE) ~ 
+                               str_c("higher than ", median(Carbs, na.rm = TRUE), " g")),
+        SatFatBin = case_when(SatFat < median(SatFat, na.rm = TRUE) ~ 
+                                  str_c("lower than ", median(SatFat, na.rm = TRUE), " g"),
+                              SatFat >= median(SatFat, na.rm = TRUE) ~ 
+                                  str_c("higher than ", median(Carbs, na.rm = TRUE), " g")),
+        UnsatFatBin = case_when(UnsatFat < median(UnsatFat, na.rm = TRUE) ~ 
+                                    str_c("lower than ", median(UnsatFat, na.rm = TRUE), " g"),
+                                UnsatFat >= median(UnsatFat, na.rm = TRUE) ~ 
+                                    str_c("higher than ", median(UnsatFat, na.rm = TRUE), " g")),
+        TransFatBin = case_when(TransFat < median(TransFat, na.rm = TRUE) ~ 
+                                    str_c("lower than ", median(TransFat, na.rm = TRUE), " g"),
+                                TransFat >= median(TransFat, na.rm = TRUE) ~ 
+                                    str_c("higher than ", median(TransFat, na.rm = TRUE), " g")),
+        LinolicAcidBin = case_when(LinolicAcid < median(LinolicAcid, na.rm = TRUE) ~ 
+                                       str_c("lower than ", median(LinolicAcid, na.rm = TRUE), " g"),
+                                   LinolicAcid >= median(LinolicAcid, na.rm = TRUE) ~ 
+                                       str_c("higher than ", median(LinolicAcid, na.rm = TRUE), " g")),
+        CholesterolBin = case_when(Cholesterol < median(Cholesterol, na.rm = TRUE) ~ 
+                                       str_c("lower than ", median(Cholesterol, na.rm = TRUE), " mg"),
+                                   Cholesterol >= median(Cholesterol, na.rm = TRUE) ~ 
+                                       str_c("higher than ", median(Cholesterol, na.rm = TRUE), " mg")),
+        AlcoholBin = case_when(Alcohol < median(Alcohol, na.rm = TRUE) ~ 
+                                   str_c("lower than ", median(Alcohol, na.rm = TRUE), " g"),
+                               Alcohol >= median(Alcohol, na.rm = TRUE) ~ 
+                                   str_c("higher than ", median(Alcohol, na.rm = TRUE), " g")),
+        MonoDiSacchBin = case_when(MonoDiSacch < median(MonoDiSacch, na.rm = TRUE) ~ 
+                                       str_c("lower than ", median(MonoDiSacch, na.rm = TRUE), " g"),
+                                   MonoDiSacch >= median(MonoDiSacch, na.rm = TRUE) ~ 
+                                       str_c("higher than ", median(PolyunsatFat, na.rm = TRUE), " g")),
+        PolySacchBin = case_when(PolySacch < median(PolySacch, na.rm = TRUE) ~ 
+                                     str_c("lower than ", median(PolySacch, na.rm = TRUE), " g"),
+                                 PolySacch >= median(PolySacch, na.rm = TRUE) ~ 
+                                     str_c("higher than ", median(PolySacch, na.rm = TRUE), " g")),
+        PolyunsatFatBin = case_when(PolyunsatFat < median(PolyunsatFat, na.rm = TRUE) ~ 
+                                        str_c("lower than ", median(PolyunsatFat, na.rm = TRUE), " g"),
+                                    PolyunsatFat >= median(PolyunsatFat, na.rm = TRUE) ~ 
+                                        str_c("higher than ", median(PolyunsatFat, na.rm = TRUE), " g"))
+    )
 saveRDS(bariatot, "data/bariatot.RDS")
