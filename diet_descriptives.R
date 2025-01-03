@@ -46,7 +46,7 @@ ggplot(data = barialong, aes(x = fct_reorder(var, value, .desc = TRUE),
     geom_boxplot(fill = "white", width = 0.1, outlier.shape = NA) +
     scale_fill_bmj(guide = "none") +
     theme_Publication() +
-    labs(x = "dietary nutrient", y = "gram", title = "Macronutrients")
+    labs(x = "", y = "gram", title = "Macronutrients")
 ggsave("results/descriptives/macronutrients.pdf", width = 4, height = 5)
 
 barialong <- baria %>% select(SatFat, UnsatFat, TransFat, PolyunsatFat) %>% 
@@ -55,7 +55,18 @@ ggplot(data = barialong, aes(x = fct_reorder(var, value, .desc = TRUE),
                              y = value, fill = var)) +
     geom_violin(bw = 5) +
     geom_boxplot(fill = "white", width = 0.1, outlier.shape = NA) +
-    scale_fill_bmj(guide = "none") +
+    scale_fill_manual(guide = "none", values = pal_bmj()(9)[c(5:9)]) +
     theme_Publication() +
-    labs(x = "", y = "gram", title = "Fat intake")
+    labs(x = "", y = "gram", title = "Fat")
 ggsave("results/descriptives/fat.pdf", width = 4, height = 5)
+
+barialong <- baria %>% select(MonoDiSacch, PolySacch) %>% 
+    pivot_longer(., cols = 1:2, names_to = "var", values_to = "value")
+ggplot(data = barialong, aes(x = fct_reorder(var, value, .desc = TRUE), 
+                             y = value, fill = var)) +
+    geom_violin(bw = 5) +
+    geom_boxplot(fill = "white", width = 0.1, outlier.shape = NA) +
+    scale_fill_manual(guide = "none", values = pal_bmj()(9)[c(1,9)]) +
+    theme_Publication() +
+    labs(x = "", y = "gram", title = "Saccharides")
+ggsave("results/descriptives/saccharides.pdf", width = 3, height = 5)
