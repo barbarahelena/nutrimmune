@@ -117,6 +117,8 @@ clin1 <- clin %>%
            v0_alcohol = case_when(v0_alcohol == 1 ~ "yes", v0_alcohol == 2 ~ "no"),
            across(where(is.character), as.factor)
            )
+saveRDS(clin1, "data/baria_metadata.RDS")
+write.csv(clin1, "data/baria_metadata.csv")
 
 clinv4 <- clin %>% select(contains("V4"), contains("v4"))
 names(clinv4)
