@@ -81,9 +81,8 @@ clin1 <- clin %>%
            contains("gluc")
            ) %>% 
     mutate(across(all_of(datevars), 
-                  ~ {
-                      # Replace invalid dates like "2999-01-01" with NA
-                      .x <- ifelse(.x == "01-01-2999", NA, .x)
+                  ~ {.x <- case_when(.x == "01-01-2999" | .x == "01-01-2995" ~ NA, 
+                                     .default = .x)
                       # Convert to Date using dmy after replacing invalid dates
                       dmy(.x)
                   }, 
@@ -203,6 +202,8 @@ diabarbase <- diabaryear %>% group_by(ID) %>%
 diettot <- rbind(bariabase, diabarbase)
 bariatot <- left_join(diettot, clin1) %>% filter(TotalCal < 5000)  %>% 
     mutate(
+        baselineYear = format(dmy(v1_date), "%Y"),
+        diffDate = time_length(interval(start = Date, end = dmy(v1_date)), unit = "days"),
         TotalCalBin = case_when(TotalCal < median(TotalCal, na.rm = TRUE) ~ 
                                     str_c("<", round(median(TotalCal, na.rm = TRUE), 0), " kcal"),
                                 TotalCal >= median(TotalCal, na.rm = TRUE) ~ 
@@ -257,6 +258,6 @@ bariatot <- left_join(diettot, clin1) %>% filter(TotalCal < 5000)  %>%
                                     PolyunsatFat >= median(PolyunsatFat, na.rm = TRUE) ~ 
                                         str_c(">=", round(median(PolyunsatFat, na.rm = TRUE),0), " g")),
         across(contains("Bin"), as.factor)
-    ) 
-saveRDS(bariatot, "data/bariatot.RDS")
+    ) %>% filter(diffDate >= 0 & diffDate < 365)
 
+saveRDS(bariatot, "data/bariatot.RDS")
