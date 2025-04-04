@@ -3,16 +3,24 @@
 
 library(tableone)
 library(tidyverse)
+library(ggsci)
 
 ## Data 
 baria <- readRDS("data/bariatot.RDS")
 
-table1 <- baria %>% filter(!is.na(v0_age)) %>% 
+table1 <- baria %>% 
+    mutate(sex = fct_rev(sex)) %>% 
+    filter(!is.na(v0_age) & !is.na(bmi_v1v4)) %>% 
     dplyr::select(v0_age, sex, v0_dm, v0_hypertension, v0_hyperchol, v0_myocardInf,
                   v0_smoking, v0_alcohol, v0_alcoholunits, v0_bmi, v0_sysbp, v0_diabp,
-                  v0_fatperc, v0_crp, v0_leuko, bmi_v1v4, bmi_v1v5,
-                  bmiperc_v1v4, bmiperc_v1v5) %>% 
-    CreateTableOne(data=., test = FALSE) %>% 
+                  v0_bmi, v0_fatperc, v0_crp, v0_leuko, 
+                  bmi_v1v4, bmi_v1v5,
+                  bmiperc_v1v4, bmiperc_v1v5, 
+                  homaIR_v1, homaIR_v4, homaIR_v5,
+                  TotalCal, Protein, Carbs, Fat, Fibers,
+                  SatFat, UnsatFat, TransFat, PolyunsatFat, Cholesterol, LinolicAcid,
+                  MonoDiSacch, PolySacch, Alcohol, Water) %>%
+    CreateTableOne(data=., test = FALSE, strata = "sex", addOverall = TRUE) %>% 
     print(nonnormal=c("v0_crp", "v0_alcoholunits", "v0_fatperc"), noSpaces = TRUE, 
           pDigits = 3, contDigits = 1, missing = TRUE) %>% 
     as.data.frame(.)
@@ -100,13 +108,14 @@ ggplot(data = leuko, aes(x = timepoint, y = leuko, fill = timepoint)) +
     labs(x = "", y = "Leukocytes", title = "Change in leukocytes")
 
 
-homair <- baria %>% select(ID, homaIR_v1, homaIR_v4, homaIR_v5) %>% 
-    pivot_longer(., cols = c(homaIR_v1, homaIR_v4, homaIR_v5), 
+homair <- baria %>% select(ID, homaIR_v1, homaIR_v4) %>% 
+    pivot_longer(., cols = c(homaIR_v1, homaIR_v4), 
                  names_to = c("var", "timepoint"), 
                  names_sep = "_", values_to = "homair") %>% 
     mutate(timepoint = case_when(timepoint == "v1" ~ "baseline", 
                                  timepoint == "v4" ~ "1 year postop",
-                                 timepoint == "v5" ~ "2 years postop"),
+                                #timepoint == "v5" ~ "2 years postop"
+                                ),
            timepoint = fct_relevel(timepoint, "baseline", after = 0L)
     )
 ggplot(data = homair, aes(x = timepoint, y = log10(homair), fill = timepoint)) +
