@@ -3,41 +3,6 @@
 
 # Libraries
 library(tidyverse)
-library(ggpubr)
-
-theme_Publication <- function(base_size=14, base_family="sans") {
-    library(grid)
-    library(ggthemes)
-    library(stringr)
-    (theme_foundation(base_size=base_size, base_family=base_family)
-        + theme(plot.title = element_text(face = "bold",
-                                          size = rel(1.0), hjust = 0.5),
-                text = element_text(),
-                panel.background = element_rect(colour = NA),
-                plot.background = element_rect(colour = NA),
-                panel.border = element_rect(colour = NA),
-                axis.title = element_text(face = "bold",size = rel(0.8)),
-                axis.title.y = element_text(angle=90, vjust =2),
-                axis.title.x = element_text(vjust = -0.2),
-                axis.text = element_text(size = rel(0.7)),
-                axis.text.x = element_text(angle = 0), 
-                axis.line = element_line(colour="black"),
-                axis.ticks = element_line(),
-                panel.grid.major = element_line(colour="#f0f0f0"),
-                panel.grid.minor = element_blank(),
-                legend.key = element_rect(colour = NA),
-                legend.position = "bottom",
-                # legend.direction = "horizontal",
-                legend.key.size= unit(0.2, "cm"),
-                legend.spacing  = unit(0, "cm"),
-                # legend.title = element_text(face="italic"),
-                plot.margin=unit(c(10,5,5,5),"mm"),
-                strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
-                strip.text = element_text(face="bold"),
-                plot.caption = element_text(size = rel(0.5), face = "italic")
-        ))
-    
-} 
 
 # Data
 datevars <- c("v1_date", "v2_date", "v3_date", "v4_date",
@@ -59,24 +24,28 @@ clin1 <- clin %>%
            v0_tnfa = tnfa, v0_ifng = ifng, v0_il1b = il1b, v0_il1ra = il1ra, 
            v0_il6 = il6, v0_il8 = il8, v0_il10 = il10, 
            v0_leptin = leptin, v0_adiponectin = adiponectin,
-           v0_glp1 = glp1, v0_pyy = PYY,
+           v0_glp1 = glp1, v0_pyy = PYY, v0_ldl = ldlchol, v0_hdl = hdlchol, 
+           v0_totchol = totchol,
            # V1 data?
            # V2 data
            v2_bmi = V2_bmi, v2_crp = V2_crp, v2_leuko = V2_leukocytes,
            # V3 data
            v3_bmi = V3_bmi, v3_crp = V3_crp, v3_leuko = V3_leukocytes,
+           v3_totchol = V3_totchol, v3_ldl = vis3_ldl, v3_totchol = V3_totchol,
            # V4 data
            v4_bmi = V4_bmi, v4_sysbp = V4_sysbp, v4_diabp = V4_diabp,
            v4_leuko = V4_leukocytes, v4_crp = V4_crp, v4_hba1c = V4_hba1c,
            v4_tnfa = V4_tnfa, v4_ifng = V4_ifng, v4_il1b = V4_il1b, v4_il1ra = V4_il1ra, 
            v4_il6 = V4_il6, v4_il8 = V4_il8, v4_il10 = V4_il10, 
            v4_leptin = V4_leptin, v4_adiponectin = V4_adiponectin,
-           v4_glp1 = V4_glp1, v4_pyy = V4_PYY,
+           v4_glp1 = V4_glp1, v4_pyy = V4_PYY, v4_ldl = V4_ldlchol, 
+           v4_totchol = V4_totchol, v4_hdlchol = V4_hdlchol,
            # V5 data
            v5_tnfa = V5_tnfa, v5_ifng = V5_ifng, v5_il1b = V5_il1b, v5_il1ra = V5_il1ra, 
            v5_il6 = V5_il6, v5_il8 = V5_il8, v5_il10 = V5_il10, v5_leuko = V5_leukocytes,
            v5_leptin = V5_leptin, v5_adiponectin = V5_adiponectin,
-           v5_glp1 = V5_glp1, v5_crp = V5_crp, v5_bmi = V5_bmi,
+           v5_glp1 = V5_glp1, v5_crp = V5_crp, v5_bmi = V5_bmi, 
+           v5_ldlchol = V5_ldlchol, v5_hdlchol = V5_hdlchol, v5_totchol = V5_totchol,
            contains("insulin"),
            contains("gluc")
            ) %>% 
@@ -178,6 +147,7 @@ diabar <- rio::import("data/diabar_dieet.xlsx") %>%
            Fibers = `voedingsvezels (g)`, Water = `water (ml)`, MonoDiSacch = `tot mono disach (g)`,
            PolySacch = `polysacchariden (g)`, PolyunsatFat = `vetzuren meerv onverzadigd (g)`) %>% 
     mutate(
+        ID = str_c("BARIA_", ID),
         DateTime = ymd_hms(Date),
         Time = format(DateTime, "%H:%M:%S"),
         Date = as_date(DateTime),
