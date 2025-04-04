@@ -231,3 +231,9 @@ bariatot <- left_join(diettot, clin1) %>% filter(TotalCal < 5000)  %>%
     ) %>% filter(diffDate >= 0 & diffDate < 365)
 
 saveRDS(bariatot, "data/bariatot.RDS")
+
+## Gene list
+gene_list <- read.csv("data/ICP_list.csv", sep = ';')
+gene_list$ICP_symbol <- trimws(gene_list$ICP_symbol)
+head(gene_list)
+saveRDS(gene_list, "data/gene_list.RDS")

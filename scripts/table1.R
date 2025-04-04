@@ -3,20 +3,21 @@
 
 library(tableone)
 library(tidyverse)
-library(ggsci)
 
 ## Data 
 baria <- readRDS("data/bariatot.RDS")
+dim(baria)
+idsrnaseq <- readRDS("data/idsrnaseq.RDS")
+baria2 <- baria %>% filter(ID %in% idsrnaseq)
+dim(baria2)
 
-table1 <- baria %>% 
+table1 <- baria2 %>% 
     mutate(sex = fct_rev(sex)) %>% 
-    filter(!is.na(v0_age) & !is.na(bmi_v1v4)) %>% 
+    filter(!is.na(v0_age)) %>% 
     dplyr::select(v0_age, sex, v0_dm, v0_hypertension, v0_hyperchol, v0_myocardInf,
                   v0_smoking, v0_alcohol, v0_alcoholunits, v0_bmi, v0_sysbp, v0_diabp,
-                  v0_bmi, v0_fatperc, v0_crp, v0_leuko, 
-                  bmi_v1v4, bmi_v1v5,
-                  bmiperc_v1v4, bmiperc_v1v5, 
-                  homaIR_v1, homaIR_v4, homaIR_v5,
+                  v0_bmi, v0_fatperc, v0_crp, v0_leuko, v0_ldl, v0_hdl, v0_totchol,
+                  homaIR_v1,
                   TotalCal, Protein, Carbs, Fat, Fibers,
                   SatFat, UnsatFat, TransFat, PolyunsatFat, Cholesterol, LinolicAcid,
                   MonoDiSacch, PolySacch, Alcohol, Water) %>%
@@ -24,7 +25,7 @@ table1 <- baria %>%
     print(nonnormal=c("v0_crp", "v0_alcoholunits", "v0_fatperc"), noSpaces = TRUE, 
           pDigits = 3, contDigits = 1, missing = TRUE) %>% 
     as.data.frame(.)
-write.csv(table1, "results/table1/table1.csv")
+write.table(table1, "results/table1/table1.tsv", sep = "\t")
 
 ## BMI changes after surgery
 bmiv0v4 <- baria %>% select(ID, v0_bmi, v2_bmi, v3_bmi, v4_bmi, v5_bmi) %>% 
