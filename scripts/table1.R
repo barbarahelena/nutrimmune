@@ -8,7 +8,7 @@ library(tidyverse)
 baria <- readRDS("data/bariatot.RDS")
 dim(baria)
 idsrnaseq <- readRDS("data/idsrnaseq.RDS")
-baria2 <- baria %>% filter(ID %in% idsrnaseq)
+baria2 <- baria %>% filter(ID %in% idsrnaseq) # so all IDs with dietary data and RNAseq data (in any tissue)
 dim(baria2)
 
 table1 <- baria2 %>% 
