@@ -374,6 +374,38 @@ main <- function() {
   
   cat(sprintf("Found %d significant correlations (baseline and delta)\n", nrow(significant_correlations)))
   
+  # Clean gene names in the significant genes table to match seq data
+  clean_gene_name <- function(gene_name) {
+    # Remove all parenthetical text
+    gene_name <- gsub("\\s*\\([^)]*\\)", "", gene_name)
+    # Remove everything after a comma or semicolon
+    gene_name <- gsub("[,;].*", "", gene_name)
+    return(gene_name)
+  }
+
+  # Apply cleaning to the gene names in the significant correlations table
+  significant_correlations$gene <- sapply(significant_correlations$gene, clean_gene_name)
+
+  # Ensure the cleaned gene names match the seq data
+  gene_df$symbol <- sapply(gene_df$symbol, clean_gene_name)
+
+  # Find corresponding Ensembl IDs after cleaning
+  significant_correlations$ensembl_id <- sapply(significant_correlations$gene, function(gene_symbol) {
+    match_idx <- which(gene_df$symbol == gene_symbol)
+    if (length(match_idx) > 0) {
+      return(gene_df$ensembl_id[match_idx[1]])
+    } else {
+      return(NA)  # Return NA if no match is found
+    }
+  })
+
+  # Warn if any genes still have no matching Ensembl ID
+  unmatched_genes <- significant_correlations[is.na(significant_correlations$ensembl_id), ]
+  if (nrow(unmatched_genes) > 0) {
+    cat("Warning: The following genes could not be matched to Ensembl IDs:\n")
+    print(unmatched_genes$gene)
+  }
+  
   # Create plots for each significant correlation
   plots_created <- 0
   
