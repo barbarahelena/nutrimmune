@@ -77,6 +77,9 @@ create_venn(
   output_file = "results/venn_diagram_homair.pdf"
 )
 
+sigliverhomair[which(sigliverhomair %in% sigvfathomair)]
+sigvfathomair[which(sigvfathomair %in% sigsfathomair)]
+
 
 # Load significant correlations data
 cat("Loading significant correlations data...\n")
@@ -122,5 +125,7 @@ create_venn(
     VisceralFat = sigvfathomair
   ),
   title = "Overlap HOMA-IR correlations",
-  output_file = "results/venn_diagram_baseline.pdf"
+  output_file = "results/venn_diagram_homair_baseline.pdf"
 )
+
+sigliverhomair[which(sigliverhomair %in% sigsfathomair & sigliverhomair %in% sigvfathomair)]
