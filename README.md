@@ -25,6 +25,8 @@ Scripts
     - Creates violin plots for visualizing changes in clinical variables (e.g., CRP, BMI, HOMA-IR).
 7. `diet_descriptives.R`:
     - Provides descriptive statistics and visualizations for dietary data.
+8. `venndiagrams.R`
+    - Check overlap in correlations derived from heatmap scripts and draw Venn diagrams.
 
 ## How to Run
 1. Install Dependencies:
