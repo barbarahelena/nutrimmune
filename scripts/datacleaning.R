@@ -3,15 +3,71 @@
 
 # Libraries
 library(tidyverse)
+library(dplyr)
+library(stringr)
 
 # Data
 datevars <- c("v1_date", "v2_date", "v3_date", "v4_date",
               "v5_date", "v6_date", "v7_date")
+lipidlowering <- c(
+  "atorvastatine", "lipitor",
+  "rosuvastatine", "crestor",
+  "simvastatine", "zocor",
+  "pravastatine", "pravachol",
+  "fluvastatine", "lescol",
+  "ezetimib", "ezetrol",
+  "alirocumab", "praluent",
+  "evolocumab", "repatha",
+  "inclisiran", "leqvio",
+  "bempedoïnezuur", "nexletol", "nustendi",
+  "colestyramine", "questran",
+  "fenofibraat", "lipanthyl", "tricor",
+  "gemfibrozil", "lopid",
+  "omega-3-vetzuren", "omacor", "epanova",
+  "nicotinezuur", "niaspan"
+)
+lld_pattern <- str_c("\\b(", str_c(tolower(lipidlowering), collapse = "|"), ")\\b")
+dmmed <- c(
+  # Metformine
+  "metformine", "glucophage",
+  
+  # Sulfonylureumderivaten
+  "gliclazide", "diamicron",
+  "glibenclamide", "daonil",
+  "glimepiride", "amaryl",
+  "glipizide", "minodiab",
+  
+  # DPP-4-remmers
+  "sitagliptine", "januvia",
+  "vildagliptine", "galvus",
+  "saxagliptine", "onglyza",
+  "linagliptine", "trajenta",
+  "alogliptine", "vipidia",
+  
+  # GLP-1-receptoragonisten
+  "liraglutide", "victoza",
+  "semaglutide", "ozempic", "rybelsus",
+  "exenatide", "byetta", "bydureon",
+  "dulaglutide", "trulicity",
+  
+  # SGLT2-remmers
+  "dapagliflozine", "forxiga",
+  "empagliflozine", "jardiance",
+  "canagliflozine", "invokana",
+  "ertugliflozine", "steeglatro",
+  
+  # Insuline (kort, middellang en langwerkend)
+  "insuline", "lantus", "levemir", "novorapid", "apidra", "toujeo", "tresiba", "humalog", "novomix", "fiasp", "actrapid"
+)
+dmmed_pattern <- str_c("\\b(", str_c(tolower(dmmed), collapse = "|"), ")\\b")
+metforminemed <- c("metformine", "glucophage", "glucient", "metformax")
+metforminemed_pattern <- str_c("\\b(", str_c(tolower(metforminemed), collapse = "|"), ")\\b")
+
 clin <- readRDS("data/BARIA_clinical_20241209.RDS")
 clin1 <- clin %>% 
-    rename(ID = Subject_ID) %>% 
-    mutate(ID = str_c("BARIA_", ID)) %>% 
-    select(ID, v0_date = `Participant Creation Date`, 
+    dplyr::rename(ID = Subject_ID) %>% 
+    dplyr::mutate(ID = str_c("BARIA_", ID)) %>% 
+    dplyr::select(ID, v0_date = `Participant Creation Date`, 
            v1_date = v1_date, v2_date = V2_date, v3_date = V3_date, 
            v4_date = V4_date, v5_date = V5_date, v6_date = V6_date, v7_date = V7_date,
            # V0 data
@@ -25,8 +81,9 @@ clin1 <- clin %>%
            v0_il6 = il6, v0_il8 = il8, v0_il10 = il10, 
            v0_leptin = leptin, v0_adiponectin = adiponectin,
            v0_glp1 = glp1, v0_pyy = PYY, v0_ldl = ldlchol, v0_hdl = hdlchol, 
-           v0_totchol = totchol,
-           # V1 data?
+           v0_totchol = totchol, v0_antibiotics = scre_ab, v0_diarrhoea = scre_chrondiarree,
+           v0_probiotics = scre_probiotic, v0_medication = medication_v0_freetext,
+           # V1 data
            # V2 data
            v2_bmi = V2_bmi, v2_crp = V2_crp, v2_leuko = V2_leukocytes,
            # V3 data
@@ -49,15 +106,19 @@ clin1 <- clin %>%
            contains("insulin"),
            contains("gluc")
            ) %>% 
-    mutate(across(all_of(datevars), 
-                  ~ {.x <- case_when(.x == "01-01-2999" | .x == "01-01-2995" ~ NA, 
-                                     .default = .x)
-                      # Convert to Date using dmy after replacing invalid dates
-                      dmy(.x)
-                  }, 
-                  .names = "cv_{.col}"),
+    dplyr::mutate(
+           across(all_of(datevars), ~ case_when(
+                .x == "01-01-2999" | .x == "01-01-2995" ~ NA_character_,
+                TRUE ~ .x
+            ) %>% dmy(), .names = "cv_{.col}"),
            v0_date = as_date(dmy_hms(v0_date)),
            across(all_of(datevars), ~ifelse(.x > ymd("2025-01-01"), NA, .x)),
+           v0_antibiotics = case_when(v0_antibiotics == "1" ~ "yes", 
+                                        v0_antibiotics == "2" ~ "no"),
+           v0_diarrhoea = case_when(v0_diarrhoea == "1" ~ "yes", 
+                                    v0_diarrhoea == "2" ~ "no"),
+           v0_probiotics = case_when(v0_probiotics == "1" ~ "yes", 
+                                        v0_probiotics == "2" ~ "no"),
            v1v3_diff = difftime(cv_v3_date, cv_v1_date, units = "days"),
            v1v2_diff = difftime(cv_v2_date, cv_v1_date, units = "days"),
            v1v4_diff = difftime(cv_v4_date, cv_v1_date, units = "days"),
@@ -83,6 +144,9 @@ clin1 <- clin %>%
            v0_smoking = case_when(v0_smoking == 1 ~ "current smoking", v0_smoking == 2 ~ "former smoking", 
                                   v0_smoking == 3 ~ "never"),
            v0_alcohol = case_when(v0_alcohol == 1 ~ "yes", v0_alcohol == 2 ~ "no"),
+           v0_lld = case_when(str_detect(tolower(v0_medication), lld_pattern) ~ "yes", .default = "no"),
+           v0_dmmed = case_when(str_detect(tolower(v0_medication), dmmed_pattern) ~ "yes", .default = "no"),
+           v0_metformine = case_when(str_detect(tolower(v0_medication), metforminemed_pattern) ~ "yes", .default = "no"),
            across(where(is.character), as.factor)
            )
 saveRDS(clin1, "data/baria_metadata.RDS")
