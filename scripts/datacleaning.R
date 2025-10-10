@@ -437,31 +437,59 @@ Amelia::missmap(diettot |> filter(diary_tool == "Eetmeter"))
 bariatot_dii <- bariatot |> 
     filter(TotalCal_kcal < 5000) |> # one subject has >8000 kcal
     filter(TotalCal_kcal > 500) |> 
+        mutate(
+        TotalCal_Z = (TotalCal_kcal - 2056) / 338,
+        Protein_Z = (Protein_g - 79.4) / 13.9,
+        Carbs_Z = (Carbs_g - 272.2) / 40.0,
+        Fat_Z = (Fat_g - 71.4) / 19.4,
+        SatFat_Z = (SatFat_g - 28.6) / 8.0,
+        TransFat_Z = (TransFat_g - 3.15) / 3.75,    
+        Cholesterol_Z = (Cholesterol_mg - 279.4) / 51.2,
+        Alcohol_Z = (Alcohol_g - 13.98) / 3.72,
+        Fiber_Z = (Fibers_g - 18.8) / 4.9,
+        PUFA_Z = (PolyunsatFat_g - 13.88 ) / 3.76,
+        Magnesium_Z = (Magnesium_mg - 310.1) / 139.4,
+        Iron_Z = (Iron_mg - 13.35) / 3.71,
+        Selenium_Z = (Selenium_ug - 67.0) / 25.1,
+        Zinc_Z = (Zinc_mg - 9.84) / 2.19,
+        VitaminA_Z = (VitaminA_ug - 983.9) / 518.9,
+        VitaminD_Z = (VitaminD_ug - 6.26) / 2.21,
+        VitaminE_Z = (VitaminE_mg - 8.73) / 1.49,
+        VitaminB1_Z = (VitaminB1_mg  - 1.70) / 0.66,
+        VitaminB2_Z = (VitaminB2_mg - 1.70) / 0.79,
+        VitaminB6_Z = (VitaminB6_mg - 1.47) / 0.74,
+        FolicAcid_Z = (FolicAcid_ug - 273.0) / 70.7,
+        VitaminB12_Z = (VitaminB12_ug - 5.15) / 2.70,
+        Niacin_Z = (Niacin_mg - 25.90) / 11.77,
+        VitaminC_Z = (VitaminC_mg - 118.2) / 43.46 
+        ) |> 
+    mutate(across(contains("_Z"), ~ pnorm(.x) * 100,
+                .names = "{.col}_perc")) |> 
     mutate(
-        TotalCal_DII = TotalCal_kcal * 0.180,
-        Protein_DII = Protein_g * 0.021,
-        Carbs_DII = Carbs_g * 0.097,
-        Fat_DII = Fat_g * 0.298,
-        SatFat_DII = SatFat_g * 0.373,
-        TransFat_DII = TransFat_g * 0.229,    
-        Cholesterol_DII = Cholesterol_mg * 0.110,
-        Alcohol_DII = Alcohol_g * -0.278,
-        Fiber_DII = Fibers_g * -0.663,
-        PUFA_DII = PolyunsatFat_g * -0.337,
-        Magnesium_DII = Magnesium_mg * -0.484,
-        Iron_DII = Iron_mg * 0.032,
-        Selenium_DII = Selenium_ug * -0.191,
-        Zinc_DII = Zinc_mg * -0.313,
-        VitaminA_DII = VitaminA_ug * -0.401,
-        VitaminD_DII = VitaminD_ug * -0.446,
-        VitaminE_DII = VitaminE_mg * -0.419,
-        VitaminB1_DII = VitaminB1_mg * -0.098,
-        VitaminB2_DII = VitaminB2_mg * -0.068,
-        VitaminB6_DII = VitaminB6_mg * -0.365,
-        FolicAcid_DII = FolicAcid_ug * -0.190,
-        VitaminB12_DII = VitaminB12_ug * 0.106,
-        Niacin_DII = Niacin_mg * -0.246,
-        VitaminC_DII = VitaminC_mg * -0.424        
+        TotalCal_DII = TotalCal_Z_perc * 0.180,
+        Protein_DII = Protein_Z_perc * 0.021,
+        Carbs_DII = Carbs_Z_perc * 0.097,
+        Fat_DII = Fat_Z_perc * 0.298,
+        SatFat_DII = SatFat_Z_perc * 0.373,
+        TransFat_DII = TransFat_Z_perc * 0.229,    
+        Cholesterol_DII = Cholesterol_Z_perc * 0.110,
+        Alcohol_DII = Alcohol_Z_perc * -0.278,
+        Fiber_DII = Fiber_Z_perc * -0.663,
+        PUFA_DII = PUFA_Z_perc * -0.337,
+        Magnesium_DII = Magnesium_Z_perc * -0.484,
+        Iron_DII = Iron_Z_perc * 0.032,
+        Selenium_DII = Selenium_Z_perc * -0.191,
+        Zinc_DII = Zinc_Z_perc * -0.313,
+        VitaminA_DII = VitaminA_Z_perc * -0.401,
+        VitaminD_DII = VitaminD_Z_perc * -0.446,
+        VitaminE_DII = VitaminE_Z_perc * -0.419,
+        VitaminB1_DII = VitaminB1_Z_perc * -0.098,
+        VitaminB2_DII = VitaminB2_Z_perc * -0.068,
+        VitaminB6_DII = VitaminB6_Z_perc * -0.365,
+        FolicAcid_DII = FolicAcid_Z_perc * -0.190,
+        VitaminB12_DII = VitaminB12_Z_perc * 0.106,
+        Niacin_DII = Niacin_Z_perc * -0.246,
+        VitaminC_DII = VitaminC_Z_perc * -0.424        
     ) |> 
     mutate(
         DII_Eetmeter = TotalCal_DII + Protein_DII + Carbs_DII + Fat_DII + SatFat_DII + Alcohol_DII + Fiber_DII + Magnesium_DII +
@@ -471,6 +499,7 @@ bariatot_dii <- bariatot |>
             Fiber_DII + PUFA_DII,
         DII_BonstatEetmeter = TotalCal_DII + Protein_DII + Carbs_DII + Fat_DII + SatFat_DII + Alcohol_DII + Fiber_DII 
     )
+gghistogram(bariatot_dii$TotalCal_Z)
 gghistogram(bariatot_dii$DII_Bonstat)
 gghistogram(bariatot_dii$DII_Eetmeter)
 gghistogram(bariatot_dii$DII_BonstatEetmeter)
