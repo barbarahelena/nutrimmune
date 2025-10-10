@@ -7,11 +7,16 @@ library(tidyverse)
 ## Data 
 baria <- readRDS("data/bariatot.RDS")
 dim(baria)
+idsserum <- readRDS("data/serum_ids.RDS")
+baria2a <- baria %>% filter(ID %in% idsserum)
+dim(baria2a)
+baria2a$ID
 idsrnaseq <- readRDS("data/idsrnaseq.RDS")
-baria2 <- baria %>% filter(ID %in% idsrnaseq) # so all IDs with dietary data and RNAseq data (in any tissue)
-dim(baria2)
+baria2b <- baria %>% filter(ID %in% idsrnaseq) # so all IDs with dietary data and RNAseq data (in any tissue)
+dim(baria2b)
+write.csv2(baria2b$ID, "results/table1/baria_ids_nutrimmune.csv", row.names = FALSE, quote = FALSE)
 
-table1 <- baria2 %>% 
+table1 <- baria2b %>% 
     mutate(sex = fct_rev(sex)) %>% 
     filter(!is.na(v0_age)) %>% 
     dplyr::select(v0_age, sex, v0_dm, v0_hypertension, v0_hyperchol, v0_myocardInf,
