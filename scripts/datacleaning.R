@@ -463,7 +463,7 @@ bariatot_dii <- bariatot |>
         Niacin_Z = (Niacin_mg - 25.90) / 11.77,
         VitaminC_Z = (VitaminC_mg - 118.2) / 43.46 
         ) |> 
-    mutate(across(contains("_Z"), ~ pnorm(.x) * 100,
+    mutate(across(contains("_Z"), ~ (pnorm(.x) * 2) - 1,
                 .names = "{.col}_perc")) |> 
     mutate(
         TotalCal_DII = TotalCal_Z_perc * 0.180,
@@ -499,10 +499,15 @@ bariatot_dii <- bariatot |>
             Fiber_DII + PUFA_DII,
         DII_BonstatEetmeter = TotalCal_DII + Protein_DII + Carbs_DII + Fat_DII + SatFat_DII + Alcohol_DII + Fiber_DII 
     )
-gghistogram(bariatot_dii$TotalCal_Z)
+
+gghistogram(bariatot_dii$TotalCal_Z_perc)
 gghistogram(bariatot_dii$DII_Bonstat)
 gghistogram(bariatot_dii$DII_Eetmeter)
-gghistogram(bariatot_dii$DII_BonstatEetmeter)
+gghistogram(bariatot_dii$DII_BonstatEetmeter[which(bariatot_dii$diary_tool == "Eetmeter")])
+gghistogram(bariatot_dii$DII_BonstatEetmeter[which(bariatot_dii$diary_tool == "Bonstat")])
+
+mean(bariatot_dii$DII_Eetmeter, na.rm = TRUE)
+mean(bariatot_dii$DII_Bonstat, na.rm = TRUE)
 
 ## Gene list
 gene_list <- read.csv("data/ICP_list.csv", sep = ';')
