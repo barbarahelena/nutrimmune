@@ -29,6 +29,7 @@ r-rcpp = "*"
 r-rcpparmadillo = "*"
 c-compiler = "*"
 cxx-compiler = "*"
+r-ggthemes = ">=5.2.0,<6"
 
 [tasks]
 install-amelia = "Rscript -e 'if (!requireNamespace(\"Amelia\", quietly = TRUE)) install.packages(\"Amelia\", repos = \"https://cloud.r-project.org\")'"

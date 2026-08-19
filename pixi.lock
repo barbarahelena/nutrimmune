@@ -200,6 +200,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/r-ggrepel-0.9.8-r45h1380947_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-ggsci-5.2.0-r45hc72bb7e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-ggsignif-0.6.4-r45hc72bb7e_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/r-ggthemes-5.2.0-r45hc72bb7e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-ggvenndiagram-1.5.7-r45hc72bb7e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-globaloptions-0.1.4-r45ha770c72_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-globals-0.19.1-r45hc72bb7e_0.conda
@@ -2733,6 +2734,20 @@ packages:
   license_family: GPL3
   size: 579506
   timestamp: 1757519614041
+- conda: https://conda.anaconda.org/conda-forge/noarch/r-ggthemes-5.2.0-r45hc72bb7e_0.conda
+  sha256: 3fccc4b54c80fa67f040c8cb9dda514c984d6f036bbf45bf6c92929a0c6fd0e6
+  md5: d2b89050e02b9b0bfddc211fe6a25de0
+  depends:
+  - r-base >=4.5,<4.6.0a0
+  - r-ggplot2 >=3.0.0
+  - r-purrr
+  - r-scales
+  - r-stringr
+  - r-tibble
+  license: GPL-2
+  license_family: GPL2
+  size: 960648
+  timestamp: 1764527179706
 - conda: https://conda.anaconda.org/conda-forge/noarch/r-ggvenndiagram-1.5.7-r45hc72bb7e_0.conda
   sha256: 45b86d6331931f68f7fdbcf697bb3c4dfe356059270d0f70fc31c863f603c2eb
   md5: 6f4e57273d02437abb539f77fe781689
