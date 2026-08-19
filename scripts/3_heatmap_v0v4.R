@@ -324,6 +324,59 @@ create_complex_heatmaps <- function(all_results) {
     # Save correlation and p-value matrices
     write.csv(corr_matrix, paste0("results/correlations/heatmaps_v0v4/correlations_", tissue, ".csv"))
     write.csv(p_matrix, paste0("results/correlations/heatmaps_v0v4/pvalues_", tissue, ".csv"))
+
+    # FDR-adjusted (BH) q-values, corrected across this tissue's own tests
+    q_matrix <- matrix(p.adjust(as.vector(p_matrix), method = "BH"),
+                        nrow = nrow(p_matrix), dimnames = dimnames(p_matrix))
+    q_symbols <- get_significance_symbols(q_matrix)
+
+    cell_fun_q <- function(j, i, x, y, width, height, fill) {
+      if (!is.na(q_matrix[i, j]) && q_matrix[i, j] < 0.05) {
+        grid.text(q_symbols[i, j], x, y, gp = gpar(fontsize = 10, fontface = "bold"),
+                  just = "center", vjust = 0.75, hjust = 0.5)
+      }
+    }
+
+    ht_q <- Heatmap(
+      corr_matrix,
+      name = "Correlation",
+      col = corr_col_fun,
+      rect_gp = gpar(col = "white", lwd = 1),
+      cell_fun = cell_fun_q,
+      row_names_side = "left",
+      row_names_gp = gpar(fontsize = 10),
+      column_names_gp = gpar(fontsize = 12, fontface = "bold"),
+      cluster_rows = TRUE,
+      show_row_dend = FALSE,
+      cluster_columns = can_cluster_cols,
+      show_column_dend = FALSE,
+      column_title = paste0("Correlations in ", tissue_label),
+      column_title_gp = gpar(fontsize = 14, fontface = "bold"),
+      heatmap_legend_param = list(
+        title = "Spearman\nCorrelation",
+        at = c(-0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75),
+        labels = c("-0.75", "-0.5", "-0.25", "0", "0.25", "0.5", "0.75"),
+        title_gp = gpar(fontsize = 10, fontface = "bold"),
+        labels_gp = gpar(fontsize = 9)
+      )
+    )
+
+    lgd_sig_q <- Legend(
+      pch = c("*", "**", "***", "****"),
+      type = "points",
+      labels = c("q<0.05", "q<0.01", "q<0.001", "q<0.0001"),
+      title = "Significance",
+      title_gp = gpar(fontsize = 10, fontface = "bold"),
+      labels_gp = gpar(fontsize = 9),
+      grid_height = unit(6, "mm"),
+      grid_width = unit(10, "mm")
+    )
+
+    pdf(paste0("results/correlations/heatmaps_v0v4/heatmap_", tissue, "_qvalue.pdf"), width = 5, height = 9)
+    draw(ht_q, annotation_legend_list = list(lgd_sig_q))
+    dev.off()
+
+    write.csv(q_matrix, paste0("results/correlations/heatmaps_v0v4/qvalues_", tissue, ".csv"))
   }
   
   # Create combined heatmap with all tissues
@@ -479,22 +532,81 @@ create_complex_heatmaps <- function(all_results) {
   # Save combined data
   write.csv(all_corrs, "results/correlations/heatmaps_v0v4/correlations_all_tissues.csv")
   write.csv(all_pvals, "results/correlations/heatmaps_v0v4/pvalues_all_tissues.csv")
+
+  # FDR-adjusted (BH) q-values, corrected across all cells shown in this combined heatmap
+  all_qvals <- matrix(p.adjust(as.vector(all_pvals), method = "BH"),
+                       nrow = nrow(all_pvals), dimnames = dimnames(all_pvals))
+  sig_symbols_q <- get_significance_symbols(all_qvals)
+
+  cell_fun_q <- function(j, i, x, y, width, height, fill) {
+    if (!is.na(all_qvals[i, j]) && all_qvals[i, j] < 0.05) {
+      grid.text(sig_symbols_q[i, j], x, y, gp = gpar(fontsize = 10, fontface = "bold"),
+                just = "center", vjust = 0.75, hjust = 0.5)
+    }
+  }
+
+  ht_all_q <- Heatmap(
+    all_corrs,
+    name = "Correlation",
+    col = corr_col_fun,
+    rect_gp = gpar(col = "white", lwd = 1),
+    cell_fun = cell_fun_q,
+    row_split = tissue_annot,
+    row_names_side = "left",
+    row_names_gp = gpar(fontsize = 8),
+    column_names_gp = gpar(fontsize = 12, fontface = "bold"),
+    cluster_rows = TRUE,
+    cluster_row_slices = FALSE,
+    show_row_dend = FALSE,
+    cluster_columns = FALSE,
+    show_column_dend = FALSE,
+    column_title = "Gene Correlations with Clinical Variables Across Tissues",
+    column_title_gp = gpar(fontsize = 14, fontface = "bold"),
+    left_annotation = row_ha,
+    heatmap_legend_param = list(
+      title = "Spearman\nCorrelation",
+      at = c(-0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75),
+      labels = c("-0.75", "-0.5", "-0.25", "0", "0.25", "0.5", "0.75"),
+      title_gp = gpar(fontsize = 10, fontface = "bold"),
+      labels_gp = gpar(fontsize = 9)
+    )
+  )
+
+  lgd_sig_q <- Legend(
+    pch = c("*", "**", "***", "****"),
+    type = "points",
+    labels = c("q<0.05", "q<0.01", "q<0.001", "q<0.0001"),
+    title = "Significance",
+    title_gp = gpar(fontsize = 10, fontface = "bold"),
+    labels_gp = gpar(fontsize = 9),
+    grid_height = unit(6, "mm"),
+    grid_width = unit(10, "mm")
+  )
+
+  pdf("results/correlations/heatmaps_v0v4/heatmap_all_tissues_qvalue.pdf", width = 8, height = 25)
+  draw(ht_all_q, annotation_legend_list = list(lgd_sig_q))
+  dev.off()
+
+  svg("results/correlations/heatmaps_v0v4/heatmap_all_tissues_qvalue.svg", width = 8, height = 25)
+  draw(ht_all_q, annotation_legend_list = list(lgd_sig_q))
+  dev.off()
+
+  write.csv(all_qvals, "results/correlations/heatmaps_v0v4/qvalues_all_tissues.csv")
 }
 
 # Main function
 main <- function() {
   # Load data
   cat("Loading RDS data...\n")
-  global_meta <<- readRDS("data/baria_metadata.RDS")
+  global_meta <<- readRDS("data/bariatot.RDS")
   global_expr <<- readRDS("data/RNASeq.Counttable.kallisto.39546.1453.2025-01.29.RDS")
   global_ensembls <<- rownames(global_expr)
   
   # Gene list
   cat("Reading gene list...\n")
-  gene_df <- readRDS("data/gene_list.RDS") %>% slice(1:45)
-  gene_df$ensembl_id <- gene_df$ENSEMBL
-  gene_df$symbol <- gsub("\\s*\\([^)]*\\)", "", gene_df$ICP_symbol)  # First remove all parenthetical text 
-  gene_df$symbol <- gsub("[,;].*", "", gene_df$symbol)  # Then remove everything after comma or semicolon
+  gene_df <- readRDS("data/gene_list.RDS")
+  gene_df$ensembl_id <- gene_df$Ensembl_ID
+  gene_df$symbol <- gene_df$Gene
   cat("Found", nrow(gene_df), "genes in gene list\n") # Display gene list info
   
   # Process each gene

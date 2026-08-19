@@ -157,6 +157,12 @@ clin1 <- clin %>%
 saveRDS(clin1, "data/baria_metadata.RDS")
 write.csv(clin1, "data/baria_metadata.csv")
 
+## Vraag Midas
+baria_tn <- clin1 |> filter(v0_metformine == "no")
+summary(clin1$v0_metformine == "no")
+summary(baria_tn$v0_bmi > 30)
+summary(baria_tn$homaIR_v1 >= 2.5)
+
 clinv4 <- clin %>% select(contains("V4"), contains("v4"))
 names(clinv4)
 clinv1 <- clin %>% select(contains("V2"), contains("v1"))
@@ -369,7 +375,7 @@ diabarbase <- diabaryear %>% group_by(ID) %>%
 
 diettot <- rbind(bariabase, diabarbase) |> full_join(bariabase_eetmeter)
 bariatot <- left_join(diettot, clin1) %>% 
-    filter(TotalCal_kcal < 5000 | TotalCal_kcal > 500) %>% # one subject has >8000 kcal
+    filter(TotalCal_kcal < 5000) |> filter(TotalCal_kcal > 500) %>% # one subject has >8000 kcal
     mutate(
         baselineYear = format(dmy(v1_date), "%Y"),
         diffDate = time_length(interval(start = Date, end = dmy(v1_date)), unit = "days"),
@@ -510,9 +516,9 @@ mean(bariatot_dii$DII_Eetmeter, na.rm = TRUE)
 mean(bariatot_dii$DII_Bonstat, na.rm = TRUE)
 
 ## Gene list
-gene_list <- read.csv("data/ICP_list.csv", sep = ';')
+gene_list <- read.csv("data/260819_genelist_paris.csv")
 
-gene_list$ICP_symbol <- trimws(gene_list$ICP_symbol)
+gene_list$Gene <- trimws(gene_list$Gene)
 head(gene_list)
 saveRDS(gene_list, "data/gene_list.RDS")
 
@@ -532,6 +538,8 @@ clin1 %>% filter(ID %in% missingids) %>%  pull(ID) %>% length()
 idsrnaseq <- readRDS("data/idsrnaseq.RDS")
 summary(serum$ID %in% idsrnaseq) 
 # 3 do not overlap with RNAseq data (overlap w missings above)
+
+summary(bariatot$ID %in% idsrnaseq)
 
 # concl: of 282 serum samples, 
 # 53 do not have dietary data within 1 year, 
@@ -558,3 +566,4 @@ gghistogram(diettot2$Water_ml)
 dim(diettot2)
 write.csv(diettot2, "data/251002_BARIA_macronutrients.csv")
 saveRDS(diettot2, "data/251002_BARIA_macronutrients.RDS")
+summary(diettot2$ID %in% idsrnaseq)

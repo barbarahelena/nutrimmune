@@ -252,15 +252,15 @@ map_clinical_to_column <- function(var_name, is_delta = FALSE) {
 main <- function() {
   # Load data
   cat("Loading RDS data...\n")
-  global_meta <<- readRDS("data/baria_metadata.RDS")
+  global_meta <<- readRDS("data/bariatot.RDS")
   global_expr <<- readRDS("data/RNASeq.Counttable.kallisto.39546.1453.2025-01.29.RDS")
   global_ensembls <<- rownames(global_expr)
   
   # Load gene list
   cat("Reading gene list...\n")
-  gene_df <- readRDS("data/gene_list.RDS") %>% slice(1:45)
-  gene_df$ensembl_id <- gene_df$ENSEMBL
-  gene_df$symbol <- gsub("\\,.*", "", gsub(" \\(.*\\)", "", gene_df$ICP_symbol))
+  gene_df <- readRDS("data/gene_list.RDS")
+  gene_df$ensembl_id <- gene_df$Ensembl_ID
+  gene_df$symbol <- gene_df$Gene
   
   # Define tissues and clinical variables
   tissues <- c("liver", "viscfat", "subcfat")

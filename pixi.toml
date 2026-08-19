@@ -1,0 +1,48 @@
+[workspace]
+authors = ["Barbara Verhaar <bjh.verhaar@gmail.com>"]
+channels = ["conda-forge", "bioconda"]
+name = "nutrimmune_beast"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[dependencies]
+r-base = "4.5.*"
+radian = "*"
+r-languageserver = "*"
+r-tidyverse = "*"
+r-rlang = "*"
+r-ggpubr = "*"
+r-ggsci = "*"
+r-corrplot = "*"
+r-hmisc = "*"
+r-circlize = "*"
+r-tableone = "*"
+r-matchit = "*"
+r-readxl = "*"
+r-ggvenndiagram = "*"
+r-rcolorbrewer = "*"
+r-showtext = "*"
+r-slider = "*"
+r-rio = "*"
+bioconductor-complexheatmap = "*"
+r-rcpp = "*"
+r-rcpparmadillo = "*"
+c-compiler = "*"
+cxx-compiler = "*"
+
+[tasks]
+install-amelia = "Rscript -e 'if (!requireNamespace(\"Amelia\", quietly = TRUE)) install.packages(\"Amelia\", repos = \"https://cloud.r-project.org\")'"
+datacleaning = "Rscript scripts/1_datacleaning.R"
+diet-descriptives = "Rscript scripts/1_diet_descriptives.R"
+heatmap-icp = "Rscript scripts/1_heatmap_icp.R"
+table1 = "Rscript scripts/1_table1.R"
+matching = "Rscript scripts/2_matching.R"
+correlations-3 = "Rscript scripts/3_correlations.R"
+heatmap-v0-3 = "Rscript scripts/3_heatmap_v0.R"
+heatmap-v0v4-3 = "Rscript scripts/3_heatmap_v0v4.R"
+correlations-4 = "Rscript scripts/4_correlations.R"
+heatmap-v0-4 = "Rscript scripts/4_heatmap_v0.R"
+venndiagrams = "Rscript scripts/venndiagrams.R"
+violinplots = "Rscript scripts/violinplots.R"
+check-data-availability = "Rscript scripts/check_data_availability.R"
+check-rna-tissue-overlap = "Rscript scripts/check_rna_tissue_overlap.R"

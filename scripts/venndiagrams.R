@@ -22,7 +22,7 @@ create_venn <- function(data_list, title, output_file) {
     ggtitle(title)
   
   # Save the Venn diagram as a PDF
-  ggsave(output_file, venn_plot, width = 10, height = 10)  # Increased dimensions for better fit
+  ggsave(output_file, venn_plot, width = 7, height = 6)  # Increased dimensions for better fit
   cat(sprintf("Saved Venn diagram for %s to %s\n", title, output_file))
 }
 
@@ -80,6 +80,7 @@ create_venn(
 sigliverhomair[which(sigliverhomair %in% sigvfathomair)]
 sigvfathomair[which(sigvfathomair %in% sigsfathomair)]
 
+unique(str_remove(expression_long$sample, ".[A-z]*.V[0-9]$"))
 
 # Load significant correlations data
 cat("Loading significant correlations data...\n")

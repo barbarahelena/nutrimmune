@@ -10,18 +10,11 @@ library(ggsci)
 # Load data
 cat("Loading data...\n")
 global_expr <- readRDS("data/RNASeq.Counttable.kallisto.39546.1453.2025-01.29.RDS")
-gene_list <- readRDS("data/gene_list.RDS") %>% slice(1:45)
-
-# Clean gene symbols
-gene_list <- gene_list %>%
-  mutate(
-    symbol = gsub("\\s*\\([^)]*\\)", "", ICP_symbol),  # Remove parenthetical text
-    symbol = gsub("[,;].*", "", symbol)               # Remove text after commas/semicolons
-  )
+gene_list <- readRDS("data/gene_list.RDS")
 
 # Extract genes of interest
-genes_of_interest <- gene_list$symbol
-ensembl_ids <- gene_list$ENSEMBL
+genes_of_interest <- gene_list$Gene
+ensembl_ids <- gene_list$Ensembl_ID
 
 # Remove version numbers from Ensembl IDs in global_expr
 cat("Removing version numbers from Ensembl IDs in global_expr...\n")
@@ -73,9 +66,9 @@ median_expression <- expression_long %>%
 
 # Add gene symbols to the aggregated data
 heatmap_data <- median_expression %>%
-  left_join(gene_list, by = c("ensembl_id" = "ENSEMBL")) %>%
-  select(symbol, Liver, VisceralFat, SubcutaneousFat) %>%
-  column_to_rownames("symbol") %>%
+  left_join(gene_list, by = c("ensembl_id" = "Ensembl_ID")) %>%
+  select(Gene, Liver, VisceralFat, SubcutaneousFat) %>%
+  column_to_rownames("Gene") %>%
   as.matrix()
 
 # Remove rows with all NA or zero values
