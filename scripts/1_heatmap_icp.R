@@ -1,4 +1,4 @@
-# Horizontal Heatmap of Median Gene Expression in Different Tissues (ICP Genes)
+# Heatmap of genes of interest - what is the expression across tissues
 # Barbara Verhaar
 
 # Libraries
@@ -85,8 +85,8 @@ if (nrow(heatmap_data) > 0) {
 # Define color palette
 heatmap_colors <- colorRamp2(c(-2, 0, 2), c(pal_nejm()(6)[6], "white", pal_nejm()(3)[3]))
 
-# Create horizontal heatmap
-cat("Creating horizontal heatmap...\n")
+# Create heatmap
+cat("Creating heatmap...\n")
 heatmap <- Heatmap(
             heatmap_data,
             name = "Expression (Z-score)",
@@ -110,6 +110,6 @@ heatmap <- Heatmap(
 
 # Save heatmap as PDF
 cat("Saving heatmap...\n")
-pdf("results/heatmap_median_gene_expression_icp_horizontal.pdf", width = 12, height = 6)
+pdf("results/heatmap_median_gene_expression_horizontal.pdf", width = 12, height = 6)
 draw(heatmap)
 dev.off()
