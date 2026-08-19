@@ -168,7 +168,6 @@ names(clinv4)
 clinv1 <- clin %>% select(contains("V2"), contains("v1"))
 names(clinv1)
 clin[1:5,1:5]
-Amelia::missmap(clin1)
 
 baria <- rio::import("data/baria_ids_nutrimmune_b.xlsx") %>% 
     select(ID = naam, Date = datum, Visit = visite, 
@@ -438,8 +437,6 @@ bariatot <- left_join(diettot, clin1) %>%
 any(duplicated(bariatot$ID)) # no duplicates
 saveRDS(bariatot, "data/bariatot.RDS")
 
-Amelia::missmap(diettot |> filter(diary_tool == "Eetmeter"))
-
 bariatot_dii <- bariatot |> 
     filter(TotalCal_kcal < 5000) |> # one subject has >8000 kcal
     filter(TotalCal_kcal > 500) |> 
@@ -552,7 +549,6 @@ diettot2 <- diettot |>
     filter(ID %in% serum$ID) |> 
     mutate(diary_tool = as.factor(diary_tool))
 dim(diettot2)
-Amelia::missmap(diettot2)
 diettot2 <- diettot2 |> select(ID, Visit, diary_tool, n_days, TotalCal_kcal, Carbs_g, Protein_g, Fat_g,
                                 SatFat_g, Fibers_g, Alcohol_g, Water_ml)
 gghistogram(diettot2$TotalCal_kcal)
