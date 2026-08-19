@@ -1,4 +1,4 @@
-# Heatmap of genes of interest (baseline)
+# Heatmap of genes of interest (baseline) and macronutrients (baseline)
 # Barbara Verhaar
 
 # Libraries
