@@ -3,6 +3,7 @@
 
 library(tableone)
 library(tidyverse)
+library(ggsci)
 
 ## Data 
 baria <- readRDS("data/bariatot.RDS")

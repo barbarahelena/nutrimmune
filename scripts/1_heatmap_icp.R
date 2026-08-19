@@ -99,7 +99,7 @@ heatmap <- Heatmap(
             cluster_columns = TRUE,
             show_row_dend = FALSE,
             show_column_dend = FALSE,
-            column_title = "Median ICP gene expression",
+            column_title = "Median gene expression",
             column_title_gp = gpar(fontsize = 14, fontface = "bold"),
             heatmap_legend_param = list(
                 title = "Z-score",
