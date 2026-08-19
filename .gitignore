@@ -1,0 +1,15 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+results/
+results_2025/
+data/
+scripts/archive/# pixi environments
+.pixi/
+!.pixi/config.toml
+scripts/archive/*
+.DS_Store
+.Rprofile
+.gitattributes
+.vscode/
